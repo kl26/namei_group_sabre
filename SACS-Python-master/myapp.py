@@ -12,15 +12,15 @@ departureDate = '2018-10-07'
 returnDate = '2018-10-09'
 origin = 'JFK'
 destination = 'LAX'
-tripType = 'OneWay'				#  'OneWay', 'Return', 'Circle', 'OpenJaw', 'Other'.
+tripType = 'Return'				#  'OneWay', 'Return', 'Circle', 'OpenJaw', 'Other'.
 passengerCount = 2
 passengerType = {'ADT': 2, 'INF' : 1}	
 cabinType = 'Y'					#  Premium First (P) First (F) Premium Business (J) Business (C) Premium Economy (S) Economy (Y)
 preferLevel = 'Preferred'		#  Valid values are: 'Only', 'Unacceptable', 'Preferred'.
-segmentType = 'O' 				#  "Code" can be "ARUNK", "O" for normal, or "X" for connection.
+maxNumStop = 0 				#  "Code" can be "ARUNK", "O" for normal, or "X" for connection.
 
 workflow = Workflow(BargainFinderMaxActivity(departureDate, returnDate, origin, destination, tripType, passengerCount, 
-	passengerType, cabinType, preferLevel, segmentType))
+	passengerType, cabinType, preferLevel, maxNumStop))
 sharedContext = workflow.runWorkflow()
 
 print("----------------------MAIN RESULTS --------------------------")

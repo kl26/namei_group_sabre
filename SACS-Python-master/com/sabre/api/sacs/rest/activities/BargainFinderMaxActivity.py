@@ -8,7 +8,7 @@ from com.sabre.api.sacs.rest.BaseRestCall import BaseRestPostCall
 import com.sabre.api.sacs.config.Configuration as conf
 
 class BargainFinderMaxActivity(Activity):
-    def __init__(self, departureDate, returnDate, origin, destination, tripType, passengerCount, passengerType, cabinType, preferLevel, segmentType):
+    def __init__(self, departureDate, returnDate, origin, destination, tripType, passengerCount, passengerType, cabinType, preferLevel, maxNumStop):
         self.departureDate = departureDate
         self.returnDate = returnDate
         self.origin = origin
@@ -18,7 +18,7 @@ class BargainFinderMaxActivity(Activity):
         self.passengerType = passengerType
         self.cabinType = cabinType
         self.preferLevel = preferLevel
-        self.segmentType = segmentType
+        self.maxNumStop = maxNumStop
 
     def runActivity(self, sharedContext):
         print("BargainFinderMax")
@@ -31,7 +31,7 @@ class BargainFinderMaxActivity(Activity):
         sharedContext.passengerType = self.passengerType
         sharedContext.cabinType = self.cabinType
         sharedContext.preferLevel = self.preferLevel
-        sharedContext.segmentType = self.segmentType
+        sharedContext.maxNumStop = self.maxNumStop
 
         config = conf.Configuration()
 
@@ -45,7 +45,7 @@ class BargainFinderMaxActivity(Activity):
                 "Target": "Production",                                 # Used to indicate whether the request is for the Test or Production system.
                     "POS": {                                            # Point of sale object.
                         "Source": [{
-                            "PseudoCityCode" : "",
+                            "PseudoCityCode" : "L2W2",
                             "RequestorID": {
                                 "Type": "1",
                                 "ID": "1",
@@ -55,7 +55,7 @@ class BargainFinderMaxActivity(Activity):
                     },
                     "OriginDestinationInformation": [{
                         "RPH": "1",                                     #placeholder for OriginDestinationInformation 
-                        "DepartureDateTime": sharedContext.departureDate+"T03:00:00",
+                        "DepartureDateTime": sharedContext.departureDate+"T00:00:00",
                         "OriginLocation": {
                             "LocationCode": sharedContext.origin
                         },
@@ -64,11 +64,12 @@ class BargainFinderMaxActivity(Activity):
                         },
                         "TPA_Extensions": {                             #Trading Partner Agreement (TPA)
                             "SegmentType": {
-                                "Code": sharedContext.segmentType       #"Code" can be "ARUNK", "O" for normal, or "X" for connection.
+                                "Code": "O"                              # 停靠，不是中转"Code" can be "ARUNK", "O" for normal, or "X" for connection.
                             }
                         }
                     }],
                     "TravelPreferences": {
+                        "MaxStopsQuantity": sharedContext.maxNumStop,
                         "ValidInterlineTicket": True,
                         "CabinPref": [{
                             "Cabin": sharedContext.cabinType,           #Premium First (P) First (F) Premium Business (J) Business (C) Premium Economy (S) Economy (Y)
@@ -91,9 +92,9 @@ class BargainFinderMaxActivity(Activity):
                     "TravelerInfoSummary": {
                         "SeatsRequested": [sharedContext.passengerCount], #The sum of all seats required by all passenger groups.
                         "AirTravelerAvail": [{
-                            "PassengerTypeQuantity": [
-        
-                            ]}
+                            "PassengerTypeQuantity": [                  # ADT:adult, INF:infant without seat, CHD:child, INS:infant with seat
+                                                                        # SNN:Restricted Senior Citizen With Multiple Age Reqs
+                            ]}                                          # JCB:Contract Bulk Adult
                         ]
                     },
                     "TPA_Extensions": {
@@ -106,10 +107,10 @@ class BargainFinderMaxActivity(Activity):
                 }
             }
 
-        if self.tripType != 'OneWay':
+        if self.tripType == 'Return':
             returnTrip = {
                 "RPH": "2",                                             #placeholder for OriginDestinationInformation 
-                "DepartureDateTime": sharedContext.returnDate+"T11:00:00",
+                "DepartureDateTime": sharedContext.returnDate+"T00:00:00",
                 "OriginLocation": {
                     "LocationCode": sharedContext.destination
                 },
@@ -118,7 +119,7 @@ class BargainFinderMaxActivity(Activity):
                 },
                 "TPA_Extensions": {                                     #Trading Partner Agreement (TPA)
                     "SegmentType": {
-                        "Code": sharedContext.segmentType               #"Code" can be "ARUNK", "O" for normal, or "X" for connection.                            }
+                        "Code": "O"                                     #"Code" can be "ARNK":arrival not known, "O" for normal, or "X" for connection.                            }
                     }
                 }
             }
